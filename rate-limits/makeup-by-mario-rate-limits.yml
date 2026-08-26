@@ -1,0 +1,84 @@
+generated: '2026-08-25'
+method: probed
+source: >-
+  Response headers observed on live unauthenticated requests to
+  https://www.makeupbymario.com/api/ucp/mcp and /api/2026-04/graphql.json +
+  https://www.makeupbymario.com/llms.txt
+description: >-
+  MAKEUP BY MARIO publishes no rate-limit numbers — there is no developer program and no
+  docs page to state them. What it does publish is the INSTRUCTION, in its own /llms.txt:
+  "Respect rate limits. The MCP endpoint is rate-limited per IP. Back off on 429 responses."
+  The runtime signal, which is what an agent actually needs, is a cost score rather than a
+  quota counter, and it was read off live responses.
+limit_count: 0
+note: >-
+  limit_count is 0 because no numeric limit is published anywhere. This is not the same as
+  "no rate limiting" — the limiting is real and cost-based, and the headers below are
+  emitted on every response. An agent cannot compute headroom from them, because neither
+  endpoint returns the budget remaining.
+limits: []
+signaling:
+- surface: MCP (both servers)
+  endpoint: [https://www.makeupbymario.com/api/ucp/mcp, https://www.makeupbymario.com/api/mcp]
+  mechanism: cost score
+  response_headers:
+  - name: shopify-complexity-score
+    observed_value: 1350
+    on_request: 'tools/list (anonymous)'
+    meaning: Cost attributed to the request. Not a remaining budget.
+  - name: shopify-complexity-score-v2
+    observed_value: 135
+    on_request: 'tools/list (anonymous)'
+    meaning: Second-generation cost score, one-tenth the v1 value on the same request.
+  - name: x-shopify-ucp-mcp-api-version
+    observed_value: '2026-04-08'
+    meaning: Protocol version, not a limit — recorded because it travels with the same headers.
+  ratelimit_headers_present: false
+  retry_after_present: false
+  status_on_exhaustion: 429
+  scope: per IP
+  window: not published
+  limit: not published
+  burst: not published
+  evidence: >-
+    Headers captured from an anonymous POST on 2026-08-25 (HTTP/2 200). No RateLimit-*,
+    X-RateLimit-* or Retry-After header was present. The 429 status is stated by the
+    provider in /llms.txt; it was not induced by this probe.
+- surface: Storefront GraphQL
+  endpoint: https://www.makeupbymario.com/api/2026-04/graphql.json
+  mechanism: leaky bucket over query cost
+  response_body_fields:
+  - path: extensions.cost.requestedQueryCost
+    observed:
+    - query: '{__schema{queryType{name}}}'
+      value: 3
+    - query: '{shop{...}} with 5 policy URLs and payment settings'
+      value: 8
+  - path: extensions.cost.actualQueryCost
+    note: Returned alongside requestedQueryCost on executed queries.
+  - path: extensions.cost.throttleStatus
+    note: >-
+      Carries maximumAvailable, currentlyAvailable and restoreRate — the only place on this
+      provider where remaining headroom is machine-readable. It is in the response BODY, not
+      a header.
+  ratelimit_headers_present: false
+  status_on_exhaustion: 200
+  error_code: THROTTLED (in errors[].extensions.code)
+  scope: per storefront access token, or per IP when anonymous
+  docs: https://shopify.dev/docs/api/usage/limits
+provider_guidance:
+  source: https://www.makeupbymario.com/llms.txt
+  quote: 'Respect rate limits. The MCP endpoint is rate-limited per IP. Back off on 429 responses.'
+crawl_limits:
+  source: https://www.makeupbymario.com/robots.txt
+  crawl_delay: not set
+  note: >-
+    No Crawl-delay directive. robots.txt instead steers agents OFF the AJAX surfaces
+    (/cart.js, /recommendations/products are Disallow) and onto the MCP endpoints, which is
+    a throughput decision expressed as a routing rule.
+gaps:
+- No published numeric limit, window or burst for any surface.
+- No RateLimit-* or X-RateLimit-* headers, and no Retry-After on the MCP endpoints.
+- >-
+  The MCP cost headers report what a request cost but never what budget remains, so an
+  agent can only discover the ceiling by hitting it.

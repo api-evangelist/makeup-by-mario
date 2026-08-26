@@ -1,0 +1,104 @@
+generated: '2026-08-25'
+method: probed
+source: https://www.makeupbymario.com/.well-known/
+description: >-
+  Probe of every /.well-known/ path plus the agent-discovery documents on both hosts that
+  serve this store — the primary domain www.makeupbymario.com and the Shopify canonical
+  host makeupbymario.myshopify.com. Three documents were served: the Universal Commerce
+  Protocol merchant profile, and OpenID Connect / RFC 8414 discovery for Shopify customer
+  accounts (both paths return the SAME byte-identical document). There is NO security.txt
+  and NO A2A agent card on either host — every /.well-known/ miss returns an HTML 404 page,
+  not a soft 200, so the absences are unambiguous.
+hosts:
+- host: www.makeupbymario.com
+  documents:
+  - path: /.well-known/ucp
+    status: 200
+    file: makeup-by-mario-ucp.json
+    note: >-
+      Universal Commerce Protocol merchant profile. Declares UCP 2026-04-08 (latest) and
+      2026-01-23, the dev.ucp.shopping MCP service endpoint, seven shopping capabilities
+      (checkout, fulfillment, discount, cart, order, catalog.search, catalog.lookup) plus
+      the dev.shopify.catalog extension, and three payment handlers (com.google.pay,
+      dev.shopify.card, dev.shopify.shop_pay). merchant_name "MAKEUP BY MARIO",
+      merchant_origin www.makeupbymario.com, Shopify shop id 27548221505.
+  - path: /.well-known/openid-configuration
+    status: 200
+    file: makeup-by-mario-openid-configuration.json
+    note: >-
+      OpenID Connect discovery for Shopify Customer Accounts. issuer
+      https://shopify.com/authentication/27548221505 — a per-merchant issuer, so the
+      document is specific to this store even though the authorization server is Shopify's.
+      Authorization-code flow with PKCE S256, RS256 id_tokens, four scopes.
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: makeup-by-mario-oauth-authorization-server.json
+    note: >-
+      RFC 8414 OAuth 2.0 Authorization Server Metadata. BYTE-IDENTICAL to the
+      openid-configuration document above (verified by diff on 2026-08-25) — Shopify serves
+      one document at both paths rather than a distinct OAuth-only metadata resource.
+  - path: /.well-known/security.txt
+    status: 404
+    note: Not served. HTML 404 page, 4,264 bytes — a real miss, not an SPA catch-all.
+  - path: /.well-known/agent-card.json
+    status: 404
+    note: No A2A agent card. HTML 404.
+  - path: /.well-known/agent.json
+    status: 404
+    note: No legacy (pre-0.3) A2A agent card. HTML 404.
+  - path: /.well-known/api-catalog
+    status: 404
+    note: No RFC 9727 API catalog. HTML 404.
+  - path: /.well-known/ai-plugin.json
+    status: 404
+    note: HTML 404.
+- host: makeupbymario.myshopify.com
+  documents:
+  - path: /.well-known/ucp
+    status: 200
+    note: >-
+      Same merchant profile on the Shopify canonical host. The profile's own
+      supported_versions and service endpoint URLs point at THIS host
+      (makeupbymario.myshopify.com/api/ucp/mcp), while the storefront serves the equivalent
+      endpoint from the primary domain.
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/security.txt
+    status: 404
+other_agent_discovery:
+- path: /llms.txt
+  status: 200
+  file: llms/makeup-by-mario-llms.txt
+  note: >-
+    Real agent instructions, not a docs index. Names the UCP discovery and MCP endpoints,
+    gives a six-step agent flow, and states the buyer-approval invariant on payment.
+- path: /agents.md
+  status: 200
+  file: llms/makeup-by-mario-agents.md
+  note: >-
+    The canonical agent-facing description of the store. /llms.txt says it mirrors this
+    document; the two are byte-identical apart from the leading blank line.
+- path: /robots.txt
+  status: 200
+  file: makeup-by-mario-robots.txt
+  note: >-
+    Carries agent policy in comments — points at /agents.md and both UCP endpoints, asks
+    personal-shopping agents to install https://shop.app/SKILL.md, and states "Checkouts are
+    for humans": no scripted form fills, browser automation, or end-to-end agent flows that
+    finalize payment without explicit contemporaneous human approval. Deliberately disallows
+    /cart.js and /recommendations/products so agents use UCP/MCP instead of the AJAX
+    surfaces.
+- path: /sitemap.xml
+  status: 200
+  note: >-
+    Sitemap index whose FIRST child is /sitemap_agentic_discovery.xml — the agent document
+    is deliberately submitted for crawling ahead of the product catalog.
+- path: /sitemap_agentic_discovery.xml
+  status: 200
+  note: One-entry sitemap listing https://www.makeupbymario.com/agents.md, changefreq weekly.
+absent:
+- security.txt (RFC 9116) on both hosts
+- A2A agent card at either /.well-known/agent-card.json or /.well-known/agent.json
+- RFC 9727 /.well-known/api-catalog

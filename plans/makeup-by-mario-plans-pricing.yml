@@ -1,0 +1,36 @@
+generated: '2026-08-25'
+method: searched
+source: https://www.makeupbymario.com/
+description: >-
+  MAKEUP BY MARIO sells cosmetics, not API access. There are no API plans, no metered tiers,
+  no free/pro/enterprise ladder and no "contact sales" gate, because there is no commercial
+  API product — the machine-readable surface exists to let agents shop the same catalog a
+  human shops, and it is free and anonymous to call. This file records that as a measured
+  zero rather than omitting the artifact.
+plan_count: 0
+plans: []
+api_access_model:
+  cost_to_call: free
+  credential_required: none for catalog, cart and checkout; a resolvable UCP agent profile URI to invoke UCP tools
+  metering: none
+  overage: none
+  note: >-
+    The commercial relationship is the retail purchase itself. An agent pays for products at
+    checkout, not for API calls.
+commercial_surfaces_that_do_exist:
+- name: Retail product catalog
+  url: https://www.makeupbymario.com/collections/all
+  note: >-
+    60+ products across Blush, Brow, Eyes, Face, Kits, Lips, Tools and Gift Card, priced in
+    98 presentment currencies and shipped to 170 countries. Machine-readable at
+    /products.json and through search_catalog on both MCP servers.
+- name: Rewards / loyalty programme
+  url: https://www.makeupbymario.com/pages/rewards
+- name: PRO artist programme
+  url: https://www.makeupbymario.com/pages/pro
+  note: Trade programme for professional makeup artists; terms at /pages/pro-program-terms-conditions.
+- name: Affiliate programme
+  url: https://www.makeupbymario.com/pages/affiliate
+gaps:
+- No API pricing page, because there is no paid API.
+- No published enterprise or partner API tier.

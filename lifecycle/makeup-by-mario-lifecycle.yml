@@ -1,0 +1,90 @@
+generated: '2026-08-25'
+method: probed
+source: >-
+  live query {publicApiVersions} on https://www.makeupbymario.com/api/2026-04/graphql.json +
+  https://www.makeupbymario.com/.well-known/ucp + MCP initialize on both servers
+description: >-
+  MAKEUP BY MARIO authors no versioning, deprecation or SLA policy of its own — it has no
+  developer program to publish one. Every lifecycle signal recorded here is inherited from
+  the platform its surfaces run on, and this file says so per row rather than crediting the
+  brand with governance it does not do. What IS the brand's own is the returns window, which
+  is the only lifecycle-shaped commitment on makeupbymario.com.
+versioning:
+- surface: Storefront GraphQL
+  scheme: path segment
+  pattern: https://www.makeupbymario.com/api/{version}/graphql.json
+  current: '2026-07'
+  probed_working: ['2026-04', '2026-01', '2025-10', 'unstable']
+  supported: ['2025-10', '2026-01', '2026-04', '2026-07']
+  unsupported_but_published: ['2026-10', 'unstable']
+  source: 'live {publicApiVersions{handle displayName supported}} on 2026-08-25'
+  owner: Shopify (platform), not MAKEUP BY MARIO
+- surface: UCP
+  scheme: dated protocol version
+  current: '2026-04-08'
+  also_supported: ['2026-01-23']
+  response_header: 'x-shopify-ucp-mcp-api-version: 2026-04-08'
+  source: https://www.makeupbymario.com/.well-known/ucp
+  owner: ucp.dev specification + Shopify implementation
+- surface: MCP
+  scheme: dated protocol version
+  current: '2025-06-18'
+  source: initialize response on both /api/mcp and /api/ucp/mcp
+  owner: Model Context Protocol specification
+  server_versions:
+    universal-commerce: 0.1.0
+    storefront-renderer: 0.1.0
+  note: Both servers self-report version 0.1.0 — pre-1.0 implementations of a stable protocol.
+deprecation:
+  policy_published_by_provider: false
+  inherited_policy:
+    owner: Shopify
+    summary: >-
+      Quarterly Storefront API versions, each supported for a minimum of one year from
+      release, after which requests are served by the oldest supported version rather than
+      failing. Field-level deprecations are annotated in the schema itself.
+    docs: https://shopify.dev/docs/api/usage/versioning
+  machine_readable_evidence:
+    source: graphql/makeup-by-mario-storefront.graphql
+    deprecated_fields: 49
+    note: >-
+      49 fields carry an @deprecated directive with a reason string in the schema served
+      from this host. That is a real, machine-readable deprecation signal an agent can act
+      on today — it just is not one MAKEUP BY MARIO authored.
+  sunset_headers:
+    rfc8594_sunset: false
+    deprecation_header: false
+    note: No Sunset or Deprecation response header was observed on any probed endpoint.
+status_page:
+  provider_operated: false
+  note: >-
+    makeupbymario.com publishes no status page. The underlying platform status page
+    (status.shopify.com) covers Shopify, not this merchant, and was NOT wired as a
+    StatusPage pointer because it would credit the brand with an operational surface it does
+    not run.
+sla:
+  published: false
+  note: No uptime or support-response commitment is published anywhere on makeupbymario.com.
+changelog:
+  provider_operated: false
+  note: >-
+    No dated API changelog. The brand runs editorial blogs (/blogs/news, /blogs/education)
+    about products, not about the API surface. No changelog/ artifact was written because
+    there is nothing dated to structure.
+commercial_lifecycle:
+  owner: MAKEUP BY MARIO
+  returns_window: 30 days from purchase date
+  returns_scope: items purchased directly from makeupbymario.com only
+  docs: https://www.makeupbymario.com/policies/refund-policy
+  note: >-
+    The one lifecycle commitment the brand makes in its own voice. It is what makes the
+    agent-facing checkout flow reversible in practice — see the reversibility block in
+    conventions/.
+company:
+  founded: 2020
+  founder: Mario Dedivanovic
+  headquarters: New York, NY, United States
+  funding: >-
+    Self-funded until January 2023, then a $40M minority growth investment from Provenance
+    and Silas Capital at a reported $200M+ valuation.
+  status: operating

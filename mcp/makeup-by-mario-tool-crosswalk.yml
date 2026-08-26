@@ -1,0 +1,225 @@
+generated: '2026-08-25'
+method: derived
+source: >-
+  mcp/makeup-by-mario-ucp-mcp-tools.json + mcp/makeup-by-mario-storefront-mcp-tools.json +
+  graphql/makeup-by-mario-storefront.graphql
+description: >-
+  MAKEUP BY MARIO publishes no OpenAPI, so the REST column of this crosswalk is empty by
+  fact rather than by omission — the binding target here is the Storefront GraphQL API,
+  which is served anonymously from the same host and is the only other machine-readable
+  contract the store exposes. Rows bind each MCP tool to the GraphQL query/mutation
+  field(s) that cover the same commerce operation. Both artifacts were retrieved live and
+  anonymously, so tool names, GraphQL field names and input schemas are all verified; what
+  is DERIVED is the binding between them, which is why confidence is stated per row.
+surfaces:
+  openapi:
+    present: false
+    note: >-
+      No OpenAPI anywhere. /openapi.json and /swagger.json return 404 on the storefront
+      host; there is no api. or developer. subdomain and no developer program.
+  graphql:
+    endpoint: https://www.makeupbymario.com/api/2026-04/graphql.json
+    gated: false
+    note: Anonymous introspection returned the full 416-type schema on 2026-08-25.
+  mcp:
+  - url: https://www.makeupbymario.com/api/ucp/mcp
+    gated: false
+    tools: 13
+  - url: https://www.makeupbymario.com/api/mcp
+    gated: false
+    tools: 5
+crosswalk:
+- tool: search_catalog
+  category: catalog
+  servers: [ucp, storefront]
+  rest: []
+  graphql: [products, search, predictiveSearch, productRecommendations]
+  binding: capability
+  confidence: high
+  note: >-
+    Free-text plus filter search over the product catalog with cursor pagination. GraphQL
+    exposes the same capability across four fields; the tool collapses them into one
+    natural-language entry point and declares its response conforms to
+    dev.ucp.shopping.catalog.search.
+- tool: lookup_catalog
+  category: catalog
+  servers: [ucp]
+  rest: []
+  graphql: [nodes, products, node]
+  binding: capability
+  confidence: high
+  note: >-
+    Batch resolution of Product and ProductVariant gids. GraphQL's nodes(ids:) is the exact
+    equivalent; the tool adds an inputs[] array recording which identifier matched which
+    variant, which GraphQL does not.
+- tool: get_product
+  category: catalog
+  servers: [ucp]
+  rest: []
+  graphql: [product, productByHandle]
+  binding: direct
+  confidence: high
+- tool: get_product_details
+  category: catalog
+  servers: [storefront]
+  rest: []
+  graphql: [product, productByHandle]
+  binding: direct
+  confidence: high
+  note: >-
+    The Storefront MCP name for the same operation UCP calls get_product. Takes an options
+    parameter to select a specific variant, which maps to variantBySelectedOptions on the
+    GraphQL Product type.
+- tool: get_cart
+  category: cart
+  servers: [ucp, storefront]
+  rest: []
+  graphql: [cart]
+  binding: direct
+  confidence: high
+- tool: create_cart
+  category: cart
+  servers: [ucp]
+  rest: []
+  graphql: [cartCreate]
+  binding: direct
+  confidence: high
+- tool: update_cart
+  category: cart
+  servers: [ucp, storefront]
+  rest: []
+  graphql: [cartLinesAdd, cartLinesUpdate, cartLinesRemove, cartBuyerIdentityUpdate, cartDiscountCodesUpdate, cartDeliveryAddressesUpdate, cartAttributesUpdate, cartNoteUpdate]
+  binding: composite
+  confidence: high
+  note: >-
+    One tool stands in for eight or more GraphQL mutations. This is the clearest case in
+    this catalog of MCP compressing a fine-grained mutation surface into a single
+    coarse-grained agent action.
+- tool: cancel_cart
+  category: cart
+  servers: [ucp]
+  rest: []
+  graphql: []
+  binding: none
+  confidence: medium
+  note: >-
+    No GraphQL cart-deletion mutation exists on the Storefront API — the nearest neighbours
+    are cartRemovePersonalData and cartLinesRemove, neither of which cancels the cart. This
+    is a UCP-only reversal path.
+- tool: get_checkout
+  category: checkout
+  servers: [ucp]
+  rest: []
+  graphql: [cart]
+  binding: capability
+  confidence: medium
+  note: >-
+    UCP models a Checkout as a first-class object with its own gid
+    (gid://shopify/Checkout/...). The Storefront GraphQL API retired the Checkout object in
+    favour of Cart, so the closest read is cart plus cartCompletionAttempt. The shapes are
+    not equivalent.
+- tool: create_checkout
+  category: checkout
+  servers: [ucp]
+  rest: []
+  graphql: [cartCreate, cartPrepareForCompletion]
+  binding: capability
+  confidence: medium
+- tool: update_checkout
+  category: checkout
+  servers: [ucp]
+  rest: []
+  graphql: [cartDeliveryAddressesUpdate, cartSelectedDeliveryOptionsUpdate, cartBillingAddressUpdate, cartPaymentUpdate, cartBuyerIdentityUpdate]
+  binding: composite
+  confidence: medium
+- tool: complete_checkout
+  category: checkout
+  servers: [ucp]
+  rest: []
+  graphql: [cartSubmitForCompletion, cartCompletionAttempt]
+  binding: capability
+  confidence: medium
+  note: >-
+    The only tool in either server that requires meta.idempotency-key. Buyer approval is
+    required before payment by the provider's own robots.txt and llms.txt policy; the
+    GraphQL path additionally requires a Shop Pay or card payment session.
+- tool: cancel_checkout
+  category: checkout
+  servers: [ucp]
+  rest: []
+  graphql: []
+  binding: none
+  confidence: medium
+  note: No GraphQL equivalent. UCP-only reversal path, same as cancel_cart.
+- tool: get_order
+  category: order
+  servers: [ucp]
+  rest: []
+  graphql: [customer]
+  binding: capability
+  confidence: low
+  note: >-
+    Storefront GraphQL only reaches orders through Customer.orders behind a customer access
+    token. The UCP tool reads an order by gid with only an agent profile, so the access
+    models differ materially and this row should not be read as an equivalence.
+- tool: search_shop_policies_and_faqs
+  category: content
+  servers: [storefront]
+  rest: []
+  graphql: [shop, pages, page, pageByHandle, metaobjects]
+  binding: capability
+  confidence: medium
+  note: >-
+    Retrieval over store policies, FAQs and product facts. GraphQL exposes the raw
+    documents (Shop.privacyPolicy, Shop.refundPolicy, pages) but no search over them, so the
+    tool adds retrieval the contract does not offer.
+mcp_only:
+- tool: cancel_cart
+  reason: No cart-cancellation mutation exists in the Storefront GraphQL schema.
+- tool: cancel_checkout
+  reason: No checkout-cancellation mutation exists in the Storefront GraphQL schema.
+- tool: search_shop_policies_and_faqs
+  reason: >-
+    Semantic search over policy and FAQ content. GraphQL serves the documents but has no
+    search field over them.
+- tool: complete_checkout
+  reason: >-
+    Partially MCP-only. GraphQL's cartSubmitForCompletion requires a payment session
+    created out of band; the UCP tool accepts payment instruments inline against a declared
+    payment handler.
+graphql_only:
+- fields: [blog, blogs, blogByHandle, article, articles]
+  reason: >-
+    Editorial content. The store runs three blogs (news, education, education-1/2) with
+    dozens of articles and no MCP tool reaches any of it.
+- fields: [collection, collections, collectionByHandle]
+  reason: >-
+    Merchandising collections are first-class in GraphQL. MCP tools search products
+    directly and never expose a collection.
+- fields: [customerCreate, customerUpdate, customerAccessTokenCreate, customerRecover, customerReset, customerAddressCreate, customerAddressUpdate, customerAddressDelete, customerDefaultAddressUpdate]
+  reason: >-
+    The entire customer-account write surface — 13 mutations — has no MCP equivalent on
+    either server. Account management is deliberately outside the agent surface.
+- fields: [localization, paymentSettings, publicApiVersions, sitemap, urlRedirects, locations, menu, productTags, productTypes]
+  reason: Store metadata and navigation. No MCP tool exposes any of it.
+- fields: [cartGiftCardCodesAdd, cartGiftCardCodesRemove, cartGiftCardCodesUpdate, cartClone, cartMetafieldsSet, cartMetafieldDelete, cartRemovePersonalData]
+  reason: >-
+    Fine-grained cart operations with no MCP counterpart. cartRemovePersonalData is
+    notable — a GDPR-shaped erasure path that no agent tool can invoke.
+- fields: [shopPayPaymentRequestSessionCreate, shopPayPaymentRequestSessionSubmit]
+  reason: Shop Pay session mutations; UCP routes Shop Pay through its own payment handler instead.
+rest_only: []
+coverage:
+  mcp_tools_total: 15
+  mcp_tools_bound_to_graphql: 13
+  mcp_tools_unbound: 2
+  graphql_query_fields: 34
+  graphql_mutation_fields: 41
+  graphql_fields_reachable_via_mcp: 21
+  graphql_fields_with_no_mcp_tool: 54
+  rest_operations: 0
+note: >-
+  Read the coverage numbers as a shape, not a score. The agent surface is deliberately
+  narrow: it covers catalog, cart, checkout and order and nothing else. Editorial content,
+  collections, customer accounts and store metadata are all reachable by a GraphQL client
+  and by no agent tool.

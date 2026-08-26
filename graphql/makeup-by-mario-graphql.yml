@@ -1,0 +1,75 @@
+generated: '2026-08-25'
+method: probed
+source: https://www.makeupbymario.com/api/2026-04/graphql.json
+description: >-
+  MAKEUP BY MARIO's storefront runs on Shopify, and the Shopify Storefront GraphQL API is
+  served from the brand's own host at
+  https://www.makeupbymario.com/api/{version}/graphql.json. Introspection is ANONYMOUS on
+  this host — the full schema was retrieved without an X-Shopify-Storefront-Access-Token on
+  2026-08-25 and the SDL saved here is rendered verbatim from that introspection response.
+endpoint: https://www.makeupbymario.com/api/2026-04/graphql.json
+endpoint_template: https://www.makeupbymario.com/api/{version}/graphql.json
+introspection:
+  gated: false
+  verified: '2026-08-25'
+  http_status: 200
+  content_type: application/json
+  versions_verified: ['2026-04', '2026-01', '2025-10', 'unstable']
+schema:
+  file: makeup-by-mario-storefront.graphql
+  format: SDL
+  derived_from: GraphQL introspection response (__schema)
+  query_type: QueryRoot
+  mutation_type: Mutation
+  subscription_type: null
+  types_total: 416
+  types_by_kind:
+    object: 262
+    input_object: 53
+    enum: 62
+    union: 16
+    interface: 10
+    scalar: 13
+  query_fields: 34
+  mutation_fields: 41
+  connection_types: 28
+  deprecated_fields: 49
+versions:
+  source: 'live query {publicApiVersions{handle displayName supported}} on 2026-08-25'
+  supported: ['2025-10', '2026-01', '2026-04', '2026-07']
+  unsupported: ['2026-10', 'unstable']
+  policy: >-
+    Shopify's platform release calendar, not a policy MAKEUP BY MARIO authors. Quarterly
+    versions, each supported for one year from release. The merchant inherits it.
+  docs: https://shopify.dev/docs/api/usage/versioning
+cost_model:
+  mechanism: >-
+    Every response carries extensions.cost.requestedQueryCost. The API is query-cost
+    throttled rather than request-count rate limited.
+  observed:
+  - query: '{__schema{queryType{name}}}'
+    requestedQueryCost: 3
+  - query: '{shop{...}} with 5 policy URLs and payment settings'
+    requestedQueryCost: 8
+  docs: https://shopify.dev/docs/api/usage/limits
+shop:
+  name: MAKEUP BY MARIO
+  description: >-
+    Shop the official MAKEUP BY MARIO collection by renowned artist Mario Dedivanovic.
+    Luxury, high-performance makeup for a pro-level beauty experience.
+  primary_domain: https://www.makeupbymario.com
+  shopify_shop_id: '27548221505'
+  currency: USD
+  country: US
+  presentment_currencies: 98
+  ships_to_countries: 170
+  product_types: [Blush, Brow, Eyes, Face, Gift Card, Kits, Lips, Tools]
+  source: 'live query {shop{...}} and /products.json on 2026-08-25'
+ownership:
+  note: >-
+    The schema is Shopify's Storefront API schema, but this endpoint is served from
+    makeupbymario.com under the brand's own TLS certificate, is scoped to Shopify shop
+    27548221505 ("MAKEUP BY MARIO"), and returns this store's catalog, policies and
+    localisation. It is the templated/platform case the pipeline recognises: the contract
+    shape is the platform's, the instance and its data are the merchant's.
+docs: https://shopify.dev/docs/api/storefront

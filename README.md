@@ -64,5 +64,8 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Makeup by Mario is a company surfaced via the API Evangelist harvest backlog (source: secondary-market) and added to the network as a stub for full-pipeline profiling.
-- https://www.nasdaqprivatemarket.com/
+MAKEUP BY MARIO is a New York-based prestige colour-cosmetics brand founded by celebrity makeup artist Mario Dedivanovic and launched direct-to-consumer in October 2020. It runs no developer program and publishes no OpenAPI, but its Shopify-hosted storefront exposes a substantial machine-readable surface from its own domain: an anonymously introspectable Storefront GraphQL API, two live Model Context Protocol servers, a Universal Commerce Protocol merchant profile, OpenID Connect discovery for customer accounts, and a provider-authored `/agents.md` and `/llms.txt`.
+
+- https://www.makeupbymario.com/
+- https://www.makeupbymario.com/agents.md
+- https://www.makeupbymario.com/.well-known/ucp

@@ -1,18 +1,133 @@
 aid: makeup-by-mario
 name: Makeup by Mario
-description: 'Makeup by Mario is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: >-
+  MAKEUP BY MARIO is a New York-based prestige colour-cosmetics brand founded by celebrity
+  makeup artist Mario Dedivanovic and launched direct-to-consumer in October 2020, selling
+  face, eye, lip, brow, blush and tool products at makeupbymario.com and through Sephora.
+  Self-funded for its first two and a half years, it took a $40M minority growth investment
+  from Provenance and Silas Capital in January 2023. It runs no developer program and
+  publishes no OpenAPI, but its Shopify-hosted storefront exposes a substantial
+  machine-readable surface from its own domain: an anonymously introspectable Storefront
+  GraphQL API, TWO live Model Context Protocol servers whose tools/list both answer
+  anonymously, a Universal Commerce Protocol merchant profile at /.well-known/ucp declaring
+  cart, checkout, fulfillment, discount, order and catalog capabilities plus three payment
+  handlers, OpenID Connect and RFC 8414 discovery for customer accounts, and a
+  provider-authored /agents.md and /llms.txt that tell AI agents which surface to use and
+  that no agent may finalize payment without contemporaneous human approval.
 url: https://raw.githubusercontent.com/api-evangelist/makeup-by-mario/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
-specificationVersion: '0.20'
+x-tier: profiled
+x-tier-reason: enrichment-pipeline
+image: https://cdn.shopify.com/s/files/1/0275/4822/1505/files/MakeupByMario_Logo.png?height=628&pad_color=fff&v=1632760838&width=1200
+specificationVersion: '0.23'
 created: '2026-08-25'
 modified: '2026-08-25'
 tags:
 - Company
-apis: []
+- Beauty
+- Cosmetics
+- Consumer Packaged Goods
+- E-Commerce
+- Direct to Consumer
+- Retail
+- Agentic Commerce
+- Shopify
+- GraphQL
+- MCP
+- Universal Commerce Protocol
+tags_raw:
+- Company
+- Beauty
+- Cosmetics
+- Consumer Packaged Goods
+- Ecommerce
+- Direct to Consumer
+- Retail
+- Agentic Commerce
+- Shopify
+- GraphQL
+- Model Context Protocol
+- Universal Commerce Protocol
+apis:
+- aid: makeup-by-mario:storefront-graphql
+  name: MAKEUP BY MARIO Storefront GraphQL API
+  description: >-
+    The Shopify Storefront GraphQL API as served from MAKEUP BY MARIO's own domain.
+    Introspection is anonymous — the full schema (416 types, 34 query fields, 41 mutations,
+    28 Relay connections, 49 deprecated fields) was retrieved without an
+    X-Shopify-Storefront-Access-Token on 2026-08-25. Covers the product catalog,
+    collections, cart and checkout preparation, editorial content, store policies and
+    customer accounts. Four API versions answered anonymously (2025-10, 2026-01, 2026-04,
+    2026-07 are supported; 2026-10 and unstable are published but unsupported).
+  humanURL: https://shopify.dev/docs/api/storefront
+  baseURL: https://www.makeupbymario.com/api/2026-04/graphql.json
+  tags:
+  - GraphQL
+  - E-Commerce
+  - Catalog
+  - Cart
+  tags_raw:
+  - GraphQL
+  - Ecommerce
+  - Catalog
+  - Cart
+  properties:
+  - type: GraphQL
+    url: graphql/makeup-by-mario-storefront.graphql
+  - type: GraphQLManifest
+    url: graphql/makeup-by-mario-graphql.yml
+  - type: DataModel
+    url: data-model/makeup-by-mario-data-model.yml
+- aid: makeup-by-mario:storefront-mcp
+  name: MAKEUP BY MARIO Storefront MCP Server
+  description: >-
+    A live Model Context Protocol server on the MAKEUP BY MARIO storefront host. An
+    anonymous JSON-RPC tools/list returned five tools with full JSON Schema input contracts
+    — search_catalog, get_product_details, get_cart, update_cart and
+    search_shop_policies_and_faqs. initialize reports serverInfo storefront-renderer 0.1.0
+    on MCP protocol 2025-06-18; resources/list and prompts/list both answer 200 with empty
+    arrays.
+  humanURL: https://www.makeupbymario.com/agents.md
+  baseURL: https://www.makeupbymario.com/api/mcp
+  tags:
+  - MCP
+  - Agents
+  - E-Commerce
+  tags_raw:
+  - MCP
+  - Agents
+  - Ecommerce
+  properties:
+  - type: MCPServer
+    url: mcp/makeup-by-mario-mcp.yml
+  - type: ToolCrosswalk
+    url: mcp/makeup-by-mario-tool-crosswalk.yml
+- aid: makeup-by-mario:ucp-commerce
+  name: MAKEUP BY MARIO UCP Agentic Commerce API
+  description: >-
+    MAKEUP BY MARIO implements the Universal Commerce Protocol for agent-driven commerce.
+    The merchant profile at /.well-known/ucp declares UCP 2026-04-08 and 2026-01-23, the
+    dev.ucp.shopping MCP service endpoint, the cart / checkout / fulfillment / discount /
+    order / catalog-search / catalog-lookup capabilities and three payment handlers (Google
+    Pay, Shopify card and Shop Pay). This endpoint's tools/list answers ANONYMOUSLY —
+    thirteen tools with full JSON Schema input contracts spanning the whole
+    cart-to-completed-order lifecycle. complete_checkout requires a meta.idempotency-key and
+    still requires contemporaneous buyer approval for payment.
+  humanURL: https://ucp.dev/2026-04-08/specification/overview/
+  baseURL: https://www.makeupbymario.com/api/ucp/mcp
+  tags:
+  - UCP
+  - Agentic Commerce
+  - MCP
+  - Checkout
+  properties:
+  - type: MCPServer
+    url: mcp/makeup-by-mario-mcp.yml
+  - type: AgenticAccess
+    url: agentic-access/makeup-by-mario-agentic-access.yml
+  - type: Idempotency
+    url: conventions/makeup-by-mario-conventions.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -20,4 +135,104 @@ maintainers:
   email: info@apis.io
 common:
 - type: Website
-  url: https://www.nasdaqprivatemarket.com/
+  url: https://www.makeupbymario.com/
+- type: Documentation
+  url: https://www.makeupbymario.com/agents.md
+- type: LLMsTxt
+  url: llms/makeup-by-mario-llms.txt
+- type: WellKnown
+  url: well-known/makeup-by-mario-well-known.yml
+- type: MCPServer
+  url: mcp/makeup-by-mario-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/makeup-by-mario-tool-crosswalk.yml
+- type: AgenticAccess
+  url: agentic-access/makeup-by-mario-agentic-access.yml
+- type: GraphQL
+  url: graphql/makeup-by-mario-storefront.graphql
+- type: DataModel
+  url: data-model/makeup-by-mario-data-model.yml
+- type: Authentication
+  url: authentication/makeup-by-mario-authentication.yml
+- type: OAuthScopes
+  url: scopes/makeup-by-mario-scopes.yml
+- type: Conventions
+  url: conventions/makeup-by-mario-conventions.yml
+- type: Idempotency
+  url: conventions/makeup-by-mario-conventions.yml
+- type: ErrorCatalog
+  url: errors/makeup-by-mario-problem-types.yml
+- type: Lifecycle
+  url: lifecycle/makeup-by-mario-lifecycle.yml
+- type: Conformance
+  url: conformance/makeup-by-mario-conformance.yml
+- type: Compliance
+  url: conformance/makeup-by-mario-conformance.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: RateLimits
+  url: rate-limits/makeup-by-mario-rate-limits.yml
+- type: Plans
+  url: plans/makeup-by-mario-plans-pricing.yml
+- type: DomainSecurity
+  url: security/makeup-by-mario-domain-security.yml
+- type: About
+  url: https://www.makeupbymario.com/pages/about
+- type: FAQ
+  url: https://www.makeupbymario.com/pages/frequently-asked-questions
+- type: Support
+  url: https://www.makeupbymario.com/pages/contact-us
+- type: ContactUs
+  url: https://www.makeupbymario.com/pages/contact-us
+- type: Blog
+  url: https://www.makeupbymario.com/blogs/education
+- type: LoyaltyProgram
+  url: https://www.makeupbymario.com/pages/rewards
+- type: TermsOfService
+  url: https://www.makeupbymario.com/policies/terms-of-service
+- type: PrivacyPolicy
+  url: https://www.makeupbymario.com/policies/privacy-policy
+- type: RefundPolicy
+  url: https://www.makeupbymario.com/policies/refund-policy
+- type: ShippingPolicy
+  url: https://www.makeupbymario.com/policies/shipping-policy
+- type: CookiePolicy
+  url: https://www.makeupbymario.com/pages/cookies
+- type: DoNotSell
+  url: https://www.makeupbymario.com/pages/do-not-sell-my-data
+x-enrichment:
+  date: '2026-08-25'
+  status: enriched
+  artifacts_added: 30
+  pass: local-v1
+x-coverage:
+  state: covered
+  reason: null
+  detail: >-
+    Contract discovery succeeded. MAKEUP BY MARIO runs no developer program and publishes no
+    OpenAPI, but four machine-readable surfaces answered anonymously from its own domain —
+    Storefront GraphQL introspection at /api/2026-04/graphql.json, an MCP server at /api/mcp,
+    a UCP commerce MCP server at /api/ucp/mcp whose tools/list returned all thirteen tools
+    including complete_checkout, and a UCP merchant profile at /.well-known/ucp. The brand
+    also authors its own /llms.txt and /agents.md and submits the latter for crawling via a
+    dedicated sitemap_agentic_discovery.xml.
+  evidence:
+  - url: https://www.makeupbymario.com/api/2026-04/graphql.json
+    status: 200
+  - url: https://www.makeupbymario.com/api/ucp/mcp
+    status: 200
+  - url: https://www.makeupbymario.com/api/mcp
+    status: 200
+  - url: https://www.makeupbymario.com/.well-known/ucp
+    status: 200
+  - url: https://www.makeupbymario.com/llms.txt
+    status: 200
+  - url: https://www.makeupbymario.com/.well-known/openid-configuration
+    status: 200
+  - url: https://www.makeupbymario.com/openapi.json
+    status: 404
+  - url: https://www.makeupbymario.com/.well-known/agent-card.json
+    status: 404
+  - url: https://www.makeupbymario.com/.well-known/security.txt
+    status: 404
+  checked: '2026-08-25'

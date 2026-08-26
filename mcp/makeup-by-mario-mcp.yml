@@ -1,0 +1,305 @@
+generated: '2026-08-25'
+method: probed
+status: published
+source: https://www.makeupbymario.com/api/ucp/mcp
+description: >-
+  MAKEUP BY MARIO serves TWO live MCP endpoints from its own storefront host, and BOTH
+  answer an anonymous JSON-RPC tools/list with HTTP 200 and full JSON Schema input
+  contracts. The Shopify Storefront MCP server at /api/mcp returned five read/cart tools.
+  The Universal Commerce Protocol MCP server at /api/ucp/mcp returned thirteen tools
+  covering the entire catalog -> cart -> checkout -> completed-order lifecycle, including
+  complete_checkout. On the UCP server only resources/list and prompts/list are gated,
+  behind a resolvable UCP agent profile URI; on the Storefront server both answer 200 with
+  empty arrays. Neither endpoint was guessed — both are named in the provider's own
+  /robots.txt and /llms.txt.
+deployment:
+  mode: remote
+  endpoint: https://www.makeupbymario.com/api/ucp/mcp
+  auth: none
+  verified: probed
+  note: >-
+    Remote HTTP MCP, callable by an agent with no installation step. There is no stdio
+    package: nothing in the provider's documents offers an npx or pip install. Tool
+    INVOCATION additionally requires meta["ucp-agent"].profile, a resolvable agent profile
+    URI that is a required property on all thirteen UCP tools, so an agent must publish a
+    profile before it can call anything beyond discovery.
+servers:
+- name: makeup-by-mario-ucp-mcp
+  transport: http
+  url: https://www.makeupbymario.com/api/ucp/mcp
+  canonical_url: https://makeupbymario.myshopify.com/api/ucp/mcp
+  protocol: MCP (JSON-RPC 2.0) over the Universal Commerce Protocol
+  protocol_version: '2025-06-18'
+  server_info:
+    name: universal-commerce
+    version: 0.1.0
+  spec: https://ucp.dev/2026-04-08/specification/overview/
+  schema: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
+  api_version_header: 'x-shopify-ucp-mcp-api-version: 2026-04-08'
+  auth: >-
+    None observed for tools/list and initialize — an anonymous POST returned 200 with all
+    thirteen tools. resources/list and prompts/list return JSON-RPC error -32001 "UCP
+    discovery failed" / invalid_profile_url ("Missing profile uri"), so those two methods
+    require a resolvable UCP agent profile.
+  capabilities:
+    tools:
+      listChanged: true
+    prompts:
+      listChanged: true
+    resources:
+      listChanged: true
+    logging: {}
+  tools_list:
+    verified: '2026-08-25'
+    http_status: 200
+    gated: false
+    tool_count: 13
+    file: makeup-by-mario-ucp-mcp-tools.json
+  vendor: Shopify UCP commerce server
+- name: makeup-by-mario-storefront-mcp
+  transport: http
+  url: https://www.makeupbymario.com/api/mcp
+  protocol: MCP (JSON-RPC 2.0)
+  protocol_version: '2025-06-18'
+  server_info:
+    name: storefront-renderer
+    version: 0.1.0
+  auth: none observed (anonymous initialize, tools/list, resources/list and prompts/list all returned 200)
+  capabilities:
+    tools:
+      listChanged: true
+    prompts:
+      listChanged: true
+    resources:
+      listChanged: true
+    logging: {}
+  tools_list:
+    verified: '2026-08-25'
+    http_status: 200
+    gated: false
+    tool_count: 5
+    file: makeup-by-mario-storefront-mcp-tools.json
+  resources_list:
+    verified: '2026-08-25'
+    http_status: 200
+    count: 0
+  prompts_list:
+    verified: '2026-08-25'
+    http_status: 200
+    count: 0
+  vendor: Shopify Storefront MCP
+  note: >-
+    search_catalog on this server documents that its response "conforms to the UCP catalog
+    search capability (dev.ucp.shopping.catalog.search)" — the two servers are overlapping
+    projections of one commerce core, not independent APIs. This server is the only place
+    search_shop_policies_and_faqs exists.
+tools:
+- name: get_checkout
+  server: makeup-by-mario-ucp-mcp
+  category: checkout
+  description: Returns details about the checkout, including line items, totals, and any applicable
+    discounts or taxes.
+  input_properties:
+  - meta
+  - id
+  required:
+  - meta
+  - id
+- name: create_checkout
+  server: makeup-by-mario-ucp-mcp
+  category: checkout
+  description: Creates a checkout. Returns checkout details, including line items, totals, and any applicable
+    discounts or taxes.
+  input_properties:
+  - meta
+  - checkout
+  required:
+  - meta
+  - checkout
+- name: update_checkout
+  server: makeup-by-mario-ucp-mcp
+  category: checkout
+  description: Updates a checkout. Returns checkout details, including line items, totals, and any applicable
+    discounts or taxes.
+  input_properties:
+  - meta
+  - checkout
+  - id
+  required:
+  - meta
+  - checkout
+  - id
+- name: complete_checkout
+  server: makeup-by-mario-ucp-mcp
+  category: checkout
+  description: Completes a checkout and returns the checkout result. Returns details about the completed
+    checkout, including order ID, Thank You Page URL, or any errors encountered.
+  input_properties:
+  - meta
+  - checkout
+  - id
+  required:
+  - meta
+  - id
+  - checkout
+- name: cancel_checkout
+  server: makeup-by-mario-ucp-mcp
+  category: checkout
+  description: Cancels a checkout.
+  input_properties:
+  - meta
+  - id
+  required:
+  - meta
+  - id
+- name: get_cart
+  server: makeup-by-mario-ucp-mcp
+  category: cart
+  description: Get the cart contents
+  input_properties:
+  - meta
+  - id
+  required:
+  - meta
+  - id
+- name: create_cart
+  server: makeup-by-mario-ucp-mcp
+  category: cart
+  description: Creates a new cart
+  input_properties:
+  - meta
+  - cart
+  required:
+  - meta
+  - cart
+- name: update_cart
+  server: makeup-by-mario-ucp-mcp
+  category: cart
+  description: Perform updates to a cart.
+  input_properties:
+  - meta
+  - cart
+  - id
+  required:
+  - meta
+  - cart
+  - id
+- name: cancel_cart
+  server: makeup-by-mario-ucp-mcp
+  category: cart
+  description: Cancels a cart.
+  input_properties:
+  - meta
+  - id
+  required:
+  - meta
+  - id
+- name: get_order
+  server: makeup-by-mario-ucp-mcp
+  category: order
+  description: Get the details of an order
+  input_properties:
+  - meta
+  - id
+  required:
+  - meta
+  - id
+- name: search_catalog
+  server: makeup-by-mario-ucp-mcp
+  category: catalog
+  description: Search for products from the online store, hosted on Shopify.
+  input_properties:
+  - meta
+  - catalog
+  required:
+  - meta
+  - catalog
+- name: lookup_catalog
+  server: makeup-by-mario-ucp-mcp
+  category: catalog
+  description: Look up multiple products or variants by identifier. Use this tool to resolve multiple
+    product/variant IDs in a single request.
+  input_properties:
+  - meta
+  - catalog
+  required:
+  - meta
+  - catalog
+- name: get_product
+  server: makeup-by-mario-ucp-mcp
+  category: catalog
+  description: Retrieve complete product detail by identifier. Returns a singular product with a relevant
+    set of variants, exact pricing, and real-time availability.
+  input_properties:
+  - meta
+  - catalog
+  required:
+  - meta
+  - catalog
+- name: search_catalog
+  server: makeup-by-mario-storefront-mcp
+  category: catalog
+  description: Search for products from the online store, hosted on Shopify.
+  input_properties:
+  - meta
+  - catalog
+  required: []
+- name: get_cart
+  server: makeup-by-mario-storefront-mcp
+  category: cart
+  description: Get the cart including items, shipping options, discount info, and checkout url for a
+    given cart id
+  input_properties:
+  - cart_id
+  required:
+  - cart_id
+- name: update_cart
+  server: makeup-by-mario-storefront-mcp
+  category: cart
+  description: Perform updates to a cart, including adding/removing/updating line items, buyer information,
+    shipping details, discount codes, gift cards and notes in one consolidated call. Shipping options
+    become available after adding items and delivery address. When creating a new cart, only addItems
+    is required.
+  input_properties:
+  - cart_id
+  - add_items
+  - update_items
+  - remove_line_ids
+  - buyer_identity
+  - delivery_addresses_to_add
+  - delivery_addresses_to_replace
+  - selected_delivery_options
+  - discount_codes
+  - gift_card_codes
+  - note
+  required: []
+- name: search_shop_policies_and_faqs
+  server: makeup-by-mario-storefront-mcp
+  category: content
+  description: 'Used to get facts about the stores policies, products, or services. Some examples of
+    questions you can ask are:'
+  input_properties:
+  - query
+  - context
+  required:
+  - query
+- name: get_product_details
+  server: makeup-by-mario-storefront-mcp
+  category: catalog
+  description: Look up a product by ID. Pass the 'options' parameter to select a specific variant for
+    the product card. Without options, the first available variant is returned.
+  input_properties:
+  - product_id
+  - options
+  - country
+  - language
+  required:
+  - product_id
+coverage:
+  ucp_tool_count: 13
+  storefront_tool_count: 5
+  distinct_tool_names: 15
+  shared_tool_names: [search_catalog, get_cart, update_cart]
+  ucp_only: [lookup_catalog, get_product, create_cart, cancel_cart, get_checkout, create_checkout, update_checkout, complete_checkout, cancel_checkout, get_order]
+  storefront_only: [get_product_details, search_shop_policies_and_faqs]
+docs: https://www.makeupbymario.com/agents.md

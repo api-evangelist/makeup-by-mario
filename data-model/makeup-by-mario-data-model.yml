@@ -1,0 +1,222 @@
+generated: '2026-08-25'
+method: derived
+source: >-
+  graphql/makeup-by-mario-storefront.graphql +
+  mcp/makeup-by-mario-ucp-mcp-tools.json + https://www.makeupbymario.com/products.json
+description: >-
+  Entity-relationship graph derived from the GraphQL SDL anonymously introspected off MAKEUP
+  BY MARIO's own host, cross-checked against the live catalog at /products.json. Every
+  entity and relationship below was read from a field declaration in the SDL or a value in
+  the live catalog — nothing is inferred beyond the type system. The Checkout entity is the
+  exception and is marked as such: it exists only in the UCP tool schemas.
+id_scheme:
+  format: 'gid://shopify/{Type}/{id}'
+  encoding: opaque ID scalar, globally unique, resolvable via the node/nodes queries
+  observed_in_tool_docs: ['gid://shopify/Checkout/abc123', 'gid://shopify/Product/...', 'gid://shopify/ProductVariant/...']
+  legacy_numeric_ids: >-
+    /products.json exposes bare integer ids (e.g. product 7978338189377) — the pre-GraphQL
+    REST identifiers. They are the numeric tail of the corresponding gid.
+  handles: >-
+    Product, Collection, Page, Blog, Article and Metaobject also carry a human-readable
+    handle used in storefront URLs and in the *ByHandle queries.
+entities:
+- name: Shop
+  root: true
+  key_fields: [id, name, description, primaryDomain, paymentSettings, shipsToCountries, moneyFormat, brand]
+  policies: [privacyPolicy, refundPolicy, shippingPolicy, termsOfService, subscriptionPolicy]
+  observed_values:
+    name: MAKEUP BY MARIO
+    primaryDomain: https://www.makeupbymario.com
+    shopify_shop_id: '27548221505'
+    currency: USD
+    country: US
+    presentment_currencies: 98
+    ships_to_countries: 170
+- name: Product
+  key_fields: [id, handle, title, description, productType, vendor, tags, availableForSale, priceRange, totalInventory, requiresSellingPlan, publishedAt]
+  domain: catalog
+  observed:
+    live_count: 60
+    product_types: [Blush, Brow, Eyes, Face, Gift Card, Kits, Lips, Tools]
+    vendors: [MAKEUP BY MARIO, makeupbymario]
+    vendor_note: >-
+      Two vendor strings for one brand in the live catalog — a real data-hygiene defect an
+      agent filtering on vendor will trip over.
+- name: ProductVariant
+  key_fields: [id, sku, barcode, title, price, compareAtPrice, availableForSale, quantityAvailable, selectedOptions, weight, weightUnit, requiresShipping]
+  domain: catalog
+  note: >-
+    /products.json exposes the same variant as option1/option2/option3 plus sku, price,
+    compare_at_price, grams and available.
+- name: ProductOption
+  key_fields: [id, name, optionValues]
+  domain: catalog
+  observed_axes: [Shade, Color, Size, Denominations, Variant, Title]
+  note: >-
+    Shade is the load-bearing axis for a colour-cosmetics catalog — it is what a shopper and
+    an agent both have to get right, and it is why get_product_details takes an options
+    parameter. Denominations appears only on gift cards.
+- name: Collection
+  key_fields: [id, handle, title, description, image, updatedAt]
+  domain: catalog
+  observed_handles: [shop-all, bestsellers, award-winning, eyes, lips, face-products, brow, brushes, gift-cards, marios-exclusives, glam-quads, gifts-under-50, marios-mini-kits]
+  note: >-
+    Merchandising collections mix product taxonomy (eyes, lips, brow) with editorial and
+    campaign groupings (get-the-look, two-step-transformation). No MCP tool reaches any of
+    them — see the crosswalk.
+- name: Cart
+  key_fields: [id, checkoutUrl, totalQuantity, cost, note, attributes, createdAt, updatedAt]
+  domain: commerce
+- name: CartLine
+  key_fields: [id, quantity, cost, merchandise, sellingPlanAllocation, discountAllocations]
+  domain: commerce
+- name: CartBuyerIdentity
+  key_fields: [email, phone, countryCode, customer, deliveryAddressPreferences]
+  domain: commerce
+- name: CartDeliveryGroup
+  key_fields: [id, deliveryAddress, deliveryOptions, selectedDeliveryOption]
+  domain: fulfillment
+  note: >-
+    /.well-known/ucp declares allows_multi_destination.shipping = false — one delivery
+    destination per checkout, and allows_method_combinations is [["shipping"]] only.
+- name: Checkout
+  key_fields: [id, line_items, totals, discounts, taxes, payment.instruments, status]
+  domain: commerce
+  surface: UCP MCP only
+  note: >-
+    A UCP-level entity with NO type in the Storefront GraphQL schema. Shopify retired the
+    Checkout object from the Storefront API in favour of Cart. Its shape here is read from
+    the create_checkout / update_checkout / complete_checkout tool inputSchemas, not from
+    the SDL — which is why the crosswalk grades those bindings medium rather than high.
+- name: Order
+  key_fields: [id, name, processedAt, financialStatus, fulfillmentStatus, totalPrice, lineItems, shippingAddress]
+  domain: commerce
+  access: >-
+    Storefront GraphQL reaches orders only via Customer.orders behind a customer access
+    token. The UCP get_order tool reads an order by gid with an agent profile.
+- name: Customer
+  key_fields: [id, email, firstName, lastName, phone, acceptsMarketing, defaultAddress, addresses, orders]
+  domain: identity
+  auth: X-Shopify-Customer-Access-Token, or OIDC (see authentication/)
+- name: MailingAddress
+  key_fields: [id, address1, address2, city, province, provinceCode, country, countryCodeV2, zip, phone, firstName, lastName]
+  domain: identity
+- name: Blog
+  key_fields: [id, handle, title, articles, seo]
+  domain: content
+  observed_handles: [news, education, education-1, education-2]
+- name: Article
+  key_fields: [id, handle, title, content, contentHtml, excerpt, image, publishedAt, author, tags, blog]
+  domain: content
+- name: Page
+  key_fields: [id, handle, title, body, bodySummary, seo, createdAt, updatedAt]
+  domain: content
+  note: >-
+    Carries the compliance surface — gdpr-compliance, ccpa-cpra-compliance,
+    pipeda-compliance, appi-compliance, vcdpa-compliance, do-not-sell-my-data — plus the
+    shade-finder and beauty-quiz tools.
+- name: Metaobject
+  key_fields: [id, handle, type, fields, updatedAt]
+  domain: content
+  note: Custom structured content. Used by the theme for lookbooks and shade guides.
+- name: Menu
+  key_fields: [id, handle, title, items]
+  domain: navigation
+- name: SellingPlanGroup
+  key_fields: [appName, name, options, sellingPlans]
+  domain: subscriptions
+  note: >-
+    Present in the schema. The live catalog shows requiresSellingPlan false across the
+    board, so no product is subscription-only.
+relationships:
+- from: Shop
+  to: Product
+  type: has_many
+  via: QueryRoot.products
+- from: Shop
+  to: Collection
+  type: has_many
+  via: QueryRoot.collections
+- from: Product
+  to: ProductVariant
+  type: has_many
+  via: Product.variants
+- from: Product
+  to: ProductOption
+  type: has_many
+  via: Product.options
+- from: Product
+  to: Collection
+  type: has_many
+  via: Product.collections
+  note: Many-to-many; Collection.products is the inverse.
+- from: ProductVariant
+  to: Product
+  type: belongs_to
+  via: ProductVariant.product
+- from: ProductVariant
+  to: SelectedOption
+  type: has_many
+  via: ProductVariant.selectedOptions
+  note: The tuple that resolves a shade. variantBySelectedOptions is the lookup.
+- from: Cart
+  to: CartLine
+  type: has_many
+  via: Cart.lines
+- from: CartLine
+  to: ProductVariant
+  type: belongs_to
+  via: CartLine.merchandise
+  note: 'Union Merchandise; ProductVariant is the only member.'
+- from: Cart
+  to: CartBuyerIdentity
+  type: has_one
+  via: Cart.buyerIdentity
+- from: Cart
+  to: CartDeliveryGroup
+  type: has_many
+  via: Cart.deliveryGroups
+- from: CartBuyerIdentity
+  to: Customer
+  type: has_one
+  via: CartBuyerIdentity.customer
+- from: Checkout
+  to: Cart
+  type: derived_from
+  via: UCP checkout id
+  note: Inferred from the UCP tool set, not declared in either contract. Lowest-confidence edge here.
+- from: Checkout
+  to: Order
+  type: has_one
+  via: complete_checkout result
+- from: Customer
+  to: Order
+  type: has_many
+  via: Customer.orders
+- from: Customer
+  to: MailingAddress
+  type: has_many
+  via: Customer.addresses
+- from: Blog
+  to: Article
+  type: has_many
+  via: Blog.articles
+- from: Article
+  to: Blog
+  type: belongs_to
+  via: Article.blog
+counts:
+  graphql_types_total: 416
+  object_types: 262
+  input_object_types: 53
+  enum_types: 62
+  union_types: 16
+  interface_types: 10
+  scalar_types: 13
+  relay_connections: 28
+  entities_documented_here: 18
+  relationships_documented_here: 18
+note: >-
+  18 entities out of 262 object types. The remainder are payloads, error types, connection
+  and edge wrappers, and SEO/media value objects. This graph covers the entities an agent
+  actually names when it shops, carts and checks out.

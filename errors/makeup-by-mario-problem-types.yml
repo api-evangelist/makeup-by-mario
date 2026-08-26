@@ -1,0 +1,135 @@
+generated: '2026-08-25'
+method: probed
+source: >-
+  Live JSON-RPC probes of https://www.makeupbymario.com/api/ucp/mcp and /api/mcp +
+  graphql/makeup-by-mario-storefront.graphql
+description: >-
+  MAKEUP BY MARIO publishes no error reference — there is no developer program to host one.
+  This catalog is built from error envelopes actually returned by the live endpoints plus
+  the error types declared in the GraphQL schema. RFC 9457 application/problem+json is used
+  nowhere on this provider.
+format: not-rfc9457
+envelopes:
+- surface: MCP (both servers)
+  endpoint: [https://www.makeupbymario.com/api/ucp/mcp, https://www.makeupbymario.com/api/mcp]
+  format: JSON-RPC 2.0 error object
+  media_type: application/json
+  http_status_on_error: 200
+  shape:
+    jsonrpc: '2.0'
+    id: <request id>
+    error:
+      code: <integer>
+      message: <string>
+      data: <object, server-specific>
+  note: >-
+    Errors are transport-level 200s. An agent that branches on HTTP status alone will read
+    a UCP discovery failure as a success. Always parse for the error member.
+- surface: Storefront GraphQL
+  endpoint: https://www.makeupbymario.com/api/2026-04/graphql.json
+  format: GraphQL errors[] array
+  media_type: application/json
+  http_status_on_error: 200
+  shape:
+    errors:
+    - message: <string>
+      locations: [{line, column}]
+      path: [<string|int>]
+      extensions: {code, ...}
+    extensions:
+      cost: {requestedQueryCost, actualQueryCost, throttleStatus}
+  note: >-
+    Mutation-level failures are NOT in errors[]. Every cart* and customer* mutation returns
+    a payload with a userErrors / cartUserErrors field carrying {field, message, code}; a
+    mutation can return HTTP 200, an empty errors[], and still have failed.
+problem_types:
+- id: ucp-invalid-profile-url
+  surface: MCP (UCP)
+  code: -32001
+  message: UCP discovery failed
+  data_code: invalid_profile_url
+  observed_content: 'Unable to fetch agent profile: Missing profile uri'
+  continue_url: https://makeupbymario.myshopify.com/
+  http_status: 200
+  observed: '2026-08-25'
+  cause: >-
+    A UCP method that requires an agent identity was called without
+    meta["ucp-agent"].profile, or with a profile URI the server could not fetch.
+  remediation: >-
+    Publish a resolvable UCP agent profile document and pass its URI as
+    meta["ucp-agent"].profile on every tool call. Reproduced on resources/list and
+    prompts/list; tools/list and initialize do not require it.
+  verified: true
+- id: jsonrpc-method-not-found
+  surface: MCP (both)
+  code: -32601
+  message: Method not found
+  http_status: 200
+  cause: An unknown JSON-RPC method was called.
+  remediation: Use initialize, tools/list, tools/call, resources/list or prompts/list.
+  verified: false
+  note: Standard JSON-RPC 2.0 code, declared by the protocol rather than observed on this host.
+- id: jsonrpc-invalid-params
+  surface: MCP (both)
+  code: -32602
+  message: Invalid params
+  http_status: 200
+  cause: >-
+    A tool call omitted a required property. On the UCP server this fires for a missing
+    meta, missing id, or a missing meta["idempotency-key"] on complete_checkout.
+  remediation: Validate against the tool's inputSchema from tools/list before calling.
+  verified: false
+- id: jsonrpc-parse-error
+  surface: MCP (both)
+  code: -32700
+  message: Parse error
+  cause: Malformed JSON body.
+  verified: false
+- id: rate-limited
+  surface: MCP (both)
+  http_status: 429
+  cause: >-
+    Per-IP rate limit on the MCP endpoint. Documented by the provider in /llms.txt:
+    "Respect rate limits. The MCP endpoint is rate-limited per IP. Back off on 429
+    responses."
+  remediation: Exponential backoff. No Retry-After header was observed on a 200 response.
+  verified: false
+  docs: https://www.makeupbymario.com/llms.txt
+- id: graphql-throttled
+  surface: Storefront GraphQL
+  extensions_code: THROTTLED
+  http_status: 200
+  cause: >-
+    The query's requestedQueryCost exceeded the remaining leaky-bucket budget. The API is
+    cost-throttled, not request-count limited.
+  remediation: >-
+    Read extensions.cost.throttleStatus.currentlyAvailable and restoreRate, reduce
+    connection page sizes, and retry when the bucket refills.
+  verified: false
+  docs: https://shopify.dev/docs/api/usage/limits
+- id: graphql-user-errors
+  surface: Storefront GraphQL
+  field: userErrors / cartUserErrors / customerUserErrors
+  http_status: 200
+  cause: >-
+    Domain validation failure on a mutation — out-of-stock variant, invalid discount code,
+    unshippable address, invalid email.
+  remediation: >-
+    Read the mutation payload's *UserErrors field on every mutation. The schema declares
+    CartErrorCode, CustomerErrorCode and SubmissionErrorCode enums carrying the machine
+    codes.
+  verified: false
+error_enums_in_schema:
+  source: graphql/makeup-by-mario-storefront.graphql
+  note: >-
+    The GraphQL schema is where the closest thing to a published error registry lives. It
+    declares typed error enums rather than prose, which is the machine-readable
+    substitute for the error reference page this provider does not publish.
+  enums: [CartErrorCode, CustomerErrorCode, SubmissionErrorCode, CountryCode, CartCardSource]
+gaps:
+- No RFC 9457 problem+json anywhere.
+- No published error reference page, no error-code index, no status-page incident taxonomy.
+- >-
+  No error surface at all is documented for the two MCP servers by the provider. Every code
+  above is either observed live by this pipeline or inherited from the JSON-RPC 2.0
+  specification, and the file marks which is which in `verified`.

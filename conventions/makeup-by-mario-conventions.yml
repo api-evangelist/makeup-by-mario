@@ -1,0 +1,177 @@
+generated: '2026-08-25'
+method: derived
+source: >-
+  mcp/makeup-by-mario-ucp-mcp-tools.json + mcp/makeup-by-mario-storefront-mcp-tools.json +
+  graphql/makeup-by-mario-storefront.graphql + https://www.makeupbymario.com/llms.txt +
+  https://www.makeupbymario.com/robots.txt +
+  https://www.makeupbymario.com/policies/refund-policy
+description: >-
+  Cross-cutting runtime semantics for the three machine-readable surfaces MAKEUP BY MARIO
+  serves from its own host. Everything here was read out of a live contract or a published
+  policy page; nothing is assumed from the platform's general documentation.
+auth_style:
+  summary: >-
+    Anonymous for everything public; a resolvable UCP agent profile URI to invoke commerce
+    tools; OIDC + PKCE for customer data.
+  see: authentication/makeup-by-mario-authentication.yml
+idempotency:
+  supported: true
+  scope: partial
+  mechanism: >-
+    The UCP MCP server requires meta["idempotency-key"] on complete_checkout. It is a
+    REQUIRED property of the meta object in that tool's JSON Schema — an agent literally
+    cannot call it without one, which is stronger than the usual optional-header design.
+  header: 'n/a — this is a JSON-RPC params field, not an HTTP header: meta["idempotency-key"]'
+  applies_to:
+  - tool: complete_checkout
+    server: https://www.makeupbymario.com/api/ucp/mcp
+    required: true
+  retention: not published
+  covered_operations: 1
+  uncovered_write_operations:
+  - create_cart
+  - update_cart
+  - cancel_cart
+  - create_checkout
+  - update_checkout
+  - cancel_checkout
+  note: >-
+    The one operation that moves money is the one operation that is protected, and it is
+    protected by requirement rather than convention. The cart and checkout mutations have
+    no idempotency mechanism at all, so a retried create_cart creates a second cart. The
+    GraphQL surface has none anywhere — no Shopify Storefront mutation accepts an
+    idempotency key.
+  evidence: >-
+    complete_checkout inputSchema.properties.meta.required == ["ucp-agent",
+    "idempotency-key"], retrieved anonymously 2026-08-25.
+reversibility:
+  grade: verified
+  summary: >-
+    Every write surface an agent can reach has an explicit reversal path, and the one
+    irreversible-by-API action — a completed order — is covered by a published 30-day
+    return window on the brand's own policy page.
+  surfaces:
+  - write_operation: create_cart / update_cart
+    reversal: cancel_cart
+    operation_id: cancel_cart
+    window: >-
+      Not stated. Carts are abandoned rather than expired in any documented interval; no
+      published TTL was found.
+    grade: documented
+    docs: https://www.makeupbymario.com/api/ucp/mcp
+  - write_operation: create_checkout / update_checkout
+    reversal: cancel_checkout
+    operation_id: cancel_checkout
+    window: >-
+      Before complete_checkout. The tool set is explicit that a checkout can be cancelled up
+      to the point of completion; after completion the checkout id resolves to an order and
+      cancel_checkout is no longer the applicable path.
+    grade: verified
+    docs: https://www.makeupbymario.com/api/ucp/mcp
+  - write_operation: complete_checkout
+    reversal: >-
+      No API reversal. There is no refund, void or order-cancel tool on either MCP server,
+      and Storefront GraphQL has no refund mutation. Reversal is a human process through
+      the brand's returns policy.
+    operation_id: null
+    window: >-
+      30 days from the purchase date. Verbatim from the policy page: "MAKEUP BY MARIO WILL
+      ACCEPT RETURNS ON PRODUCTS PURCHASED FROM MAKEUPBYMARIO.COM WITHIN 30 DAYS OF THE
+      PURCHASE DATE."
+    grade: verified
+    docs: https://www.makeupbymario.com/policies/refund-policy
+    note: >-
+      Returns are accepted only on items purchased directly from makeupbymario.com; the
+      brand reserves the right to refuse a return. Damaged or incorrect items go to
+      help@makeupbymario.com. Exchanges are available for products with variant shade
+      options. The refund policy states no post-purchase order-cancellation window, so an
+      agent should treat complete_checkout as final and route any change through returns.
+  agent_guidance: >-
+    An agent can safely rehearse the whole flow up to complete_checkout, because every step
+    before it is cancellable. complete_checkout is the one-way door — it requires an
+    idempotency key, it requires contemporaneous human approval by the store's own stated
+    policy, and after it succeeds the only remedy is a 30-day return.
+dry_run_mode:
+  supported: false
+  note: >-
+    No preview, simulate or validate-only parameter on any of the eighteen tools. The
+    closest thing is create_checkout, which computes totals, taxes and discounts without
+    charging — an agent can quote a price accurately without committing.
+pagination:
+  style: cursor
+  surfaces:
+  - surface: UCP / Storefront MCP
+    request: catalog.pagination.cursor
+    response: pagination.cursor
+    note: >-
+      search_catalog documents that initial results are deliberately limited and that the
+      agent should follow pagination.cursor when the user asks for more.
+  - surface: Storefront GraphQL
+    style: Relay connections
+    request_params: [first, last, after, before]
+    response_fields: [edges, node, cursor, pageInfo.hasNextPage, pageInfo.hasPreviousPage, pageInfo.startCursor, pageInfo.endCursor]
+    connection_types: 28
+money_representation:
+  format: >-
+    Integer minor units paired with an ISO 4217 currency code, e.g. {"amount": 2500,
+    "currency": "USD"} is $25.00.
+  note: >-
+    Every one of the thirteen UCP tools repeats this rule verbatim in its own description,
+    including the zero-decimal-currency caveat for JPY. It is the single most-repeated
+    instruction in the contract, which is a fair signal of how often agents get it wrong.
+  graphql_contrast: >-
+    Storefront GraphQL uses the MoneyV2 type with a Decimal amount string instead. An agent
+    moving between the two surfaces must convert.
+error_envelope:
+  see: errors/makeup-by-mario-problem-types.yml
+  summary: >-
+    JSON-RPC 2.0 error objects on both MCP servers; a top-level errors[] array with
+    extensions on GraphQL; RFC 9457 problem+json is used nowhere.
+versioning:
+  graphql: >-
+    Path-segment version, /api/{version}/graphql.json. Four versions supported
+    (2025-10, 2026-01, 2026-04, 2026-07); 2026-10 and unstable are published as unsupported.
+  ucp: >-
+    Two protocol versions declared in /.well-known/ucp — 2026-04-08 (latest stable) and
+    2026-01-23. Responses carry x-shopify-ucp-mcp-api-version: 2026-04-08.
+  mcp: MCP protocol 2025-06-18, reported by initialize on both servers.
+  see: lifecycle/makeup-by-mario-lifecycle.yml
+request_id_tracing:
+  supported: true
+  headers: [x-request-id, cf-ray, server-timing]
+  note: >-
+    Every storefront response carries x-request-id (a uuid plus a unix timestamp) and a
+    verbose server-timing header breaking out processing, db and fetch durations plus the
+    serving edge. Useful for support correspondence; there is no published trace-lookup
+    endpoint.
+rate_limit_signaling:
+  see: rate-limits/makeup-by-mario-rate-limits.yml
+  summary: >-
+    Cost-based, not count-based. MCP responses carry shopify-complexity-score and
+    shopify-complexity-score-v2; GraphQL responses carry extensions.cost.requestedQueryCost.
+    No RateLimit-* or X-RateLimit-* headers are emitted.
+agent_policy:
+  source: [https://www.makeupbymario.com/robots.txt, https://www.makeupbymario.com/llms.txt]
+  rules:
+  - >-
+    Checkout requires contemporaneous human approval. Agents must not complete payment
+    without explicit buyer consent, and must not use scripted form fills or browser
+    automation to finalize an order.
+  - >-
+    Agents should use the UCP/MCP endpoints rather than screen-scraping the storefront.
+    /cart.js and /recommendations/products are explicitly disallowed in robots.txt to push
+    agents onto the structured surface.
+  - >-
+    Personal shopping assistants are asked to install https://shop.app/SKILL.md and
+    transact through Shop Pay rather than driving the storefront directly.
+  - 'Respect rate limits: back off on 429.'
+  - >-
+    Pass context.address_country and context.currency for accurate pricing and
+    availability — the store presents 98 currencies and ships to 170 countries, so
+    unlocalised quotes will be wrong.
+cross_links:
+  errors: errors/makeup-by-mario-problem-types.yml
+  lifecycle: lifecycle/makeup-by-mario-lifecycle.yml
+  authentication: authentication/makeup-by-mario-authentication.yml
+  rate_limits: rate-limits/makeup-by-mario-rate-limits.yml
+  conformance: conformance/makeup-by-mario-conformance.yml

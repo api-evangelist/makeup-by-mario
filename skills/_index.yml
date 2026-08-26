@@ -1,0 +1,28 @@
+generated: '2026-08-25'
+method: generated
+source: >-
+  mcp/makeup-by-mario-mcp.yml + graphql/makeup-by-mario-storefront.graphql +
+  llms/makeup-by-mario-agents.md + https://www.makeupbymario.com/policies/refund-policy
+note: >-
+  MAKEUP BY MARIO publishes no OpenAPI, so every operation named in these skills was
+  grounded in either a live MCP tools/list response (both servers, 2026-08-25) or a field
+  read out of the anonymously introspected GraphQL SDL. No operation names are invented.
+  Every skill also carries the store's own published human-approval rule from /robots.txt
+  and /llms.txt — those are the provider's words, not ours.
+skills:
+- file: makeup-by-mario-find-shade.md
+  name: Find a MAKEUP BY MARIO product and pin the right shade
+  api: mcp/makeup-by-mario-mcp.yml
+  operations: [search_catalog, lookup_catalog, get_product, get_product_details, products, search, predictiveSearch, productRecommendations, product, productByHandle]
+- file: makeup-by-mario-build-cart.md
+  name: Build a MAKEUP BY MARIO cart
+  api: mcp/makeup-by-mario-mcp.yml
+  operations: [create_cart, get_cart, update_cart, cancel_cart, cartCreate, cartLinesAdd, cartLinesUpdate, cartLinesRemove, cartBuyerIdentityUpdate, cartDeliveryAddressesAdd, cartSelectedDeliveryOptionsUpdate, cartDiscountCodesUpdate]
+- file: makeup-by-mario-complete-checkout.md
+  name: Hand off a MAKEUP BY MARIO checkout to a human
+  api: mcp/makeup-by-mario-mcp.yml
+  operations: [create_checkout, get_checkout, update_checkout, complete_checkout, cancel_checkout, get_order, cartPrepareForCompletion, cartSubmitForCompletion, cartCompletionAttempt]
+- file: makeup-by-mario-answer-policy.md
+  name: Answer a MAKEUP BY MARIO policy, shipping or returns question
+  api: mcp/makeup-by-mario-mcp.yml
+  operations: [search_shop_policies_and_faqs, shop, page, pageByHandle, pages, article, articles, blog, blogByHandle]

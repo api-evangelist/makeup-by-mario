@@ -1,0 +1,107 @@
+generated: '2026-08-25'
+method: probed
+source: >-
+  https://www.makeupbymario.com/.well-known/openid-configuration +
+  https://www.makeupbymario.com/.well-known/oauth-authorization-server + live anonymous
+  probes of the GraphQL, Storefront MCP and UCP MCP endpoints
+description: >-
+  MAKEUP BY MARIO has no developer program and issues no API keys, so there is no
+  developer-facing auth page to read. What exists instead is a two-tier model that was
+  established by probe: everything public about the store — catalog, cart, checkout
+  scaffolding, policies — is reachable with NO credential at all, and only customer-account
+  data sits behind OpenID Connect. That first tier is the unusual part. Three independent
+  machine-readable surfaces on this host answered anonymously with HTTP 200 on 2026-08-25.
+schemes:
+- id: anonymous-storefront
+  type: none
+  applies_to:
+  - https://www.makeupbymario.com/api/2026-04/graphql.json
+  - https://www.makeupbymario.com/api/mcp
+  - https://www.makeupbymario.com/api/ucp/mcp
+  - https://www.makeupbymario.com/products.json
+  verified: '2026-08-25'
+  evidence: >-
+    Full GraphQL introspection, MCP initialize, and MCP tools/list on both servers all
+    returned 200 with no Authorization header and no
+    X-Shopify-Storefront-Access-Token. This is a Shopify configuration choice, not an
+    oversight in our probe — the same probe returns 401/403 on stores that require a
+    storefront token.
+  note: >-
+    Anonymous does not mean unbounded. The GraphQL API is query-cost throttled and the MCP
+    endpoints are rate-limited per IP; see rate-limits/.
+- id: ucp-agent-profile
+  type: agent-profile
+  applies_to: [https://www.makeupbymario.com/api/ucp/mcp]
+  parameter: meta["ucp-agent"].profile
+  location: JSON-RPC params
+  required: true
+  format: URI
+  verified: '2026-08-25'
+  evidence: >-
+    Required on all thirteen UCP tools' inputSchema. resources/list and prompts/list without
+    it return JSON-RPC error -32001 "UCP discovery failed", data.code invalid_profile_url,
+    content "Unable to fetch agent profile: Missing profile uri".
+  note: >-
+    This is identity, not authorization — the agent declares who it is by publishing a
+    resolvable profile document, and the server fetches it. There is no secret, no
+    issuance step and no revocation surface. It is the only credential-shaped requirement
+    on the whole agent surface.
+- id: complete-checkout-idempotency
+  type: idempotency-key
+  applies_to: [https://www.makeupbymario.com/api/ucp/mcp]
+  parameter: meta["idempotency-key"]
+  required: true
+  scope: complete_checkout only
+  verified: '2026-08-25'
+  note: >-
+    Not an auth scheme, recorded here because it is the second required member of the same
+    meta object. See conventions/ for the full treatment.
+- id: customer-account-oidc
+  type: openIdConnect
+  openid_configuration: https://www.makeupbymario.com/.well-known/openid-configuration
+  oauth_authorization_server: https://www.makeupbymario.com/.well-known/oauth-authorization-server
+  issuer: https://shopify.com/authentication/27548221505
+  authorization_endpoint: https://shopify.com/authentication/27548221505/oauth/authorize
+  token_endpoint: https://shopify.com/authentication/27548221505/oauth/token
+  end_session_endpoint: https://shopify.com/authentication/27548221505/logout
+  jwks_uri: https://shopify.com/authentication/27548221505/.well-known/jwks.json
+  grant_types: [authorization_code, refresh_token, 'urn:ietf:params:oauth:grant-type:jwt-bearer']
+  response_types: [code]
+  pkce: [S256]
+  token_endpoint_auth_methods: [client_secret_basic, client_secret_post]
+  id_token_signing_alg: [RS256]
+  subject_types: [public]
+  scopes: [openid, email, 'customer-account-api:full', 'customer-account-mcp-api:full']
+  claims: [iss, sub, aud, exp, iat, nonce, sid, email, email_verified]
+  applies_to: customer account data (orders, addresses, saved payment methods)
+  verified: '2026-08-25'
+  note: >-
+    The issuer is per-merchant — it carries this store's Shopify shop id 27548221505 — so
+    the discovery document is specific to MAKEUP BY MARIO even though the authorization
+    server is operated by Shopify. Note the fourth scope,
+    customer-account-mcp-api:full: an authenticated customer-account MCP surface is
+    declared here that no anonymous probe can reach.
+- id: storefront-customer-access-token
+  type: apiKey
+  header: X-Shopify-Customer-Access-Token
+  applies_to: [https://www.makeupbymario.com/api/2026-04/graphql.json]
+  required_for: QueryRoot.customer and the 13 customer* mutations
+  verified: derived from graphql/makeup-by-mario-storefront.graphql
+  note: >-
+    Minted by the customerAccessTokenCreate mutation. This is the older Storefront-API
+    customer path, coexisting with the OIDC customer-account path above.
+tiers:
+- tier: public
+  credential: none
+  reaches: catalog, collections, editorial content, store policies, cart, checkout scaffolding, localisation
+- tier: agent
+  credential: a resolvable UCP agent profile URI
+  reaches: all thirteen UCP commerce tools including complete_checkout
+- tier: customer
+  credential: OIDC authorization code + PKCE, or a Storefront customer access token
+  reaches: that customer's orders, addresses and saved payment methods
+absent:
+- No developer portal, no API key issuance, no OAuth client registration for third parties.
+- No mutual TLS, no HTTP signatures, no bearer-token scheme of the brand's own.
+- No /.well-known/security.txt and no /.well-known/oauth-protected-resource.
+docs: https://www.makeupbymario.com/agents.md

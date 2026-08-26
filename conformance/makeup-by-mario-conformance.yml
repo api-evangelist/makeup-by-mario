@@ -1,0 +1,198 @@
+generated: '2026-08-25'
+method: probed
+source: >-
+  https://www.makeupbymario.com/.well-known/ucp +
+  https://www.makeupbymario.com/.well-known/openid-configuration + MCP initialize/tools/list
+  on both servers + graphql/makeup-by-mario-storefront.graphql + the brand's own compliance
+  and policy pages
+description: >-
+  What MAKEUP BY MARIO conforms to was established by probe, not by reading a marketing
+  claim — this provider makes no compliance claims about its API surface anywhere, because
+  it has no developer program. Every `conforms: true` below points at a document served from
+  the brand's own host or a schema retrieved from it.
+standards:
+- id: ucp
+  name: Universal Commerce Protocol
+  version: 2026-04-08
+  conforms: true
+  evidence: >-
+    /.well-known/ucp returns a UCP merchant profile declaring version 2026-04-08 with
+    2026-01-23 also supported, the dev.ucp.shopping service over MCP transport, seven
+    capabilities and three payment handlers. Responses from the MCP endpoint carry
+    x-shopify-ucp-mcp-api-version: 2026-04-08.
+  url: https://www.makeupbymario.com/.well-known/ucp
+  spec: https://ucp.dev/2026-04-08/specification/overview/
+- id: mcp
+  name: Model Context Protocol
+  version: '2025-06-18'
+  conforms: true
+  evidence: >-
+    Two servers on this host answer JSON-RPC initialize with protocolVersion 2025-06-18 and
+    a capabilities object, and answer tools/list with schema-bearing tools. serverInfo:
+    universal-commerce 0.1.0 and storefront-renderer 0.1.0.
+  url: https://www.makeupbymario.com/api/ucp/mcp
+- id: jsonrpc2
+  name: JSON-RPC 2.0
+  conforms: true
+  evidence: Both MCP servers use the JSON-RPC 2.0 envelope, including the error object with negative integer codes.
+- id: graphql
+  name: GraphQL (June 2018 spec) with Relay connections
+  conforms: true
+  evidence: >-
+    Anonymous introspection returned a 416-type schema with 28 Relay Connection types
+    implementing the cursor connections specification (edges/node/cursor/pageInfo).
+  url: https://www.makeupbymario.com/api/2026-04/graphql.json
+- id: json-schema-2020-12
+  name: JSON Schema draft 2020-12
+  conforms: true
+  evidence: >-
+    Every one of the eighteen MCP tools declares
+    "$schema": "https://json-schema.org/draft/2020-12/schema" on its inputSchema, and the
+    UCP checkout schemas use allOf/if/then/else conditional composition.
+- id: oidc
+  name: OpenID Connect Core 1.0 Discovery
+  conforms: true
+  evidence: >-
+    /.well-known/openid-configuration returns a well-formed discovery document with issuer,
+    authorization_endpoint, token_endpoint, jwks_uri, RS256 id_token signing and PKCE S256.
+  url: https://www.makeupbymario.com/.well-known/openid-configuration
+- id: oauth2
+  name: OAuth 2.0 Authorization Code with PKCE
+  conforms: true
+  evidence: >-
+    grant_types_supported includes authorization_code and refresh_token;
+    code_challenge_methods_supported is [S256].
+- id: rfc8414
+  name: RFC 8414 OAuth 2.0 Authorization Server Metadata
+  conforms: partial
+  evidence: >-
+    /.well-known/oauth-authorization-server returns 200 with valid metadata, but it is
+    BYTE-IDENTICAL to the openid-configuration document rather than an OAuth-specific
+    resource. It satisfies the discovery contract; it is not independently authored.
+  url: https://www.makeupbymario.com/.well-known/oauth-authorization-server
+- id: rfc9728
+  name: RFC 9728 OAuth 2.0 Protected Resource Metadata
+  conforms: false
+  evidence: >-
+    /.well-known/oauth-protected-resource is not served. An MCP client cannot discover by
+    the standard path which authorization server protects the customer-account MCP
+    endpoint, even though the customer-account-mcp-api:full scope proves one exists.
+- id: rfc9457
+  name: RFC 9457 Problem Details for HTTP APIs
+  conforms: false
+  evidence: >-
+    No application/problem+json anywhere. Errors are JSON-RPC error objects and GraphQL
+    errors[] arrays, both returned with HTTP 200.
+- id: rfc9116
+  name: RFC 9116 security.txt
+  conforms: false
+  evidence: /.well-known/security.txt returns 404 on both www.makeupbymario.com and makeupbymario.myshopify.com.
+- id: a2a
+  name: A2A Agent Card
+  conforms: false
+  evidence: >-
+    Both /.well-known/agent-card.json and the legacy /.well-known/agent.json return HTML 404
+    on both hosts. No agent card is published.
+- id: llms-txt
+  name: llms.txt
+  conforms: true
+  evidence: >-
+    /llms.txt returns a real agent-instruction document (not a docs index), and /agents.md
+    carries the same content and is submitted for crawling via a dedicated
+    sitemap_agentic_discovery.xml.
+  url: https://www.makeupbymario.com/llms.txt
+- id: sitemaps-org
+  name: sitemaps.org protocol 0.9
+  conforms: true
+  evidence: >-
+    /sitemap.xml is a valid sitemapindex; its first child is a purpose-built
+    sitemap_agentic_discovery.xml listing /agents.md.
+- id: idempotency
+  name: Idempotent write semantics
+  conforms: partial
+  evidence: >-
+    meta["idempotency-key"] is a REQUIRED input on complete_checkout, the only money-moving
+    operation. No other write operation on any surface offers one.
+  see: conventions/makeup-by-mario-conventions.yml
+- id: iso4217
+  name: ISO 4217 currency codes with minor-unit integers
+  conforms: true
+  evidence: >-
+    All thirteen UCP tools document {"amount": <int minor units>, "currency": "<ISO 4217>"}
+    and handle zero-decimal currencies. 98 presentment currencies are enabled on the shop.
+- id: iso3166
+  name: ISO 3166-1 alpha-2 country codes
+  conforms: true
+  evidence: shipsToCountries returns 170 alpha-2 codes; UCP context.address_country takes the same.
+domain_standard:
+  market: Agentic commerce / retail checkout
+  standard: Universal Commerce Protocol (UCP) 2026-04-08
+  conforms: true
+  weight: primary
+  evidence:
+    location: https://www.makeupbymario.com/.well-known/ucp
+    declaration: >-
+      The merchant profile declares the dev.ucp.shopping service and seven namespaced
+      capabilities directly in the contract: dev.ucp.shopping.checkout,
+      dev.ucp.shopping.fulfillment, dev.ucp.shopping.discount, dev.ucp.shopping.cart,
+      dev.ucp.shopping.order, dev.ucp.shopping.catalog.search,
+      dev.ucp.shopping.catalog.lookup, plus the dev.shopify.catalog extension that extends
+      the two catalog capabilities.
+    corroboration: >-
+      The Storefront MCP server's search_catalog description independently states its
+      response "conforms to the UCP catalog search capability
+      (dev.ucp.shopping.catalog.search)" — the standard is asserted inside the tool contract,
+      not only in the discovery document.
+    payment_handlers: [com.google.pay, dev.shopify.card, dev.shopify.shop_pay]
+  significance: >-
+    This is the domain standard for this market and it is declared in the contract rather
+    than claimed in prose. An agent that already speaks UCP can transact against this store
+    with no bespoke connector: discover at /.well-known/ucp, call the declared MCP endpoint,
+    and use the same cart/checkout/order shapes it uses at any other UCP merchant.
+compliance:
+  note: >-
+    The brand publishes no SOC 2, ISO 27001, PCI DSS or HIPAA attestation and operates no
+    trust center — it is a consumer cosmetics retailer, not an infrastructure vendor. What it
+    DOES publish, on its own domain, is a set of per-regime data-subject-rights pages with
+    working request forms (access report, rectification, portability, erasure). Those are
+    substantive, not linkware; each was fetched and read on 2026-08-25.
+  regimes:
+  - id: gdpr
+    name: EU General Data Protection Regulation
+    published: true
+    url: https://www.makeupbymario.com/pages/gdpr-compliance
+    status: 200
+    capabilities: [access report, rectification, portability, right to be forgotten]
+  - id: ccpa-cpra
+    name: California Consumer Privacy Act / CPRA
+    published: true
+    url: https://www.makeupbymario.com/pages/ccpa-cpra-compliance
+    status: 200
+  - id: vcdpa
+    name: Virginia Consumer Data Protection Act
+    published: true
+    url: https://www.makeupbymario.com/pages/vcdpa-compliance
+    status: 200
+  - id: pipeda
+    name: Canada PIPEDA
+    published: true
+    url: https://www.makeupbymario.com/pages/pipeda-compliance
+    status: 200
+  - id: appi
+    name: Japan Act on the Protection of Personal Information
+    published: true
+    url: https://www.makeupbymario.com/pages/appi-compliance
+    status: 200
+  - id: do-not-sell
+    name: Do Not Sell or Share My Personal Information
+    published: true
+    url: https://www.makeupbymario.com/pages/do-not-sell-my-data
+    status: 200
+  - id: cookies
+    name: Cookie policy
+    published: true
+    url: https://www.makeupbymario.com/pages/cookies
+    status: 200
+  certifications: []
+  trust_center: none
+  security_disclosure: none

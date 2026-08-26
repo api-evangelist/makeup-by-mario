@@ -1,0 +1,61 @@
+generated: '2026-08-25'
+method: searched
+source: >-
+  npm registry search, pypi.org, rubygems.org, api.github.com org lookup, and the brand's
+  own site
+description: >-
+  MAKEUP BY MARIO ships no client libraries. This is a measured zero, not an unchecked one —
+  every registry below was queried on 2026-08-25 and every one missed. There is no GitHub
+  organisation, no developer program and no SDK page, which is consistent: the agent surface
+  here is protocol-native (MCP + GraphQL), so the intended client is an MCP client or a
+  GraphQL client, neither of which the brand would ship.
+package_count: 0
+official_package_count: 0
+packages: []
+registries_checked:
+- registry: npm
+  queries: [makeupbymario, makeup-by-mario]
+  endpoint: https://registry.npmjs.org/-/v1/search
+  result: no first-party package
+  version: null
+  published: null
+  note: >-
+    The "makeup-by-mario" query returns unrelated packages from the eBay `makeup-*`
+    accessibility library family. None are this brand's.
+- registry: pypi
+  query: makeupbymario
+  endpoint: https://pypi.org/pypi/makeupbymario/json
+  status: 404
+  version: null
+  published: null
+- registry: rubygems
+  query: makeupbymario
+  endpoint: https://rubygems.org/api/v1/gems/makeupbymario.json
+  status: 404
+  version: null
+  published: null
+- registry: github
+  queries: [makeupbymario, makeup-by-mario]
+  endpoint: https://api.github.com/orgs/{org}
+  status: 404
+  version: null
+  published: null
+  note: No GitHub organisation exists under either spelling.
+- registry: cdn
+  result: no first-party script tag, unpkg or jsDelivr distribution found on the storefront
+  version: null
+  published: null
+third_party_clients:
+  note: >-
+    Not first-party and deliberately NOT listed as packages. Recorded because they are what
+    an integrator would actually reach for against this store's surfaces.
+  applicable:
+  - Any MCP client (both servers speak MCP 2025-06-18 over HTTP JSON-RPC).
+  - Any GraphQL client against https://www.makeupbymario.com/api/2026-04/graphql.json.
+  - >-
+    The Shopify Storefront API SDKs, which the brand's own storefront is served by. The
+    brand does not publish, version or support them.
+  - >-
+    https://shop.app/SKILL.md — the Shop skill, which the store's own /llms.txt and
+    /robots.txt recommend to personal shopping agents. It is Shopify's, not MAKEUP BY
+    MARIO's, and it is an Agent Skill rather than a package.

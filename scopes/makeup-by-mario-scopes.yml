@@ -1,0 +1,56 @@
+generated: '2026-08-25'
+method: probed
+source: https://www.makeupbymario.com/.well-known/openid-configuration
+description: >-
+  The only OAuth scope surface MAKEUP BY MARIO exposes is the scopes_supported array of its
+  per-merchant OpenID Connect discovery document, served from its own host. There is no
+  scopes reference page, because there is no developer program to document one — these four
+  values were read from the live discovery document, not from prose. The whole anonymous
+  agent surface (GraphQL, Storefront MCP, UCP MCP) sits OUTSIDE this scope model and
+  requires no token at all.
+authorization_server: https://shopify.com/authentication/27548221505
+issuer: https://shopify.com/authentication/27548221505
+authorization_endpoint: https://shopify.com/authentication/27548221505/oauth/authorize
+token_endpoint: https://shopify.com/authentication/27548221505/oauth/token
+flows: [authorization_code]
+pkce_required_methods: [S256]
+scope_count: 4
+scopes:
+- name: openid
+  standard: OpenID Connect Core 1.0
+  description: Requests an id_token. Required to use the OIDC flow at all.
+  granularity: standard
+- name: email
+  standard: OpenID Connect Core 1.0
+  description: Releases the email and email_verified claims for the signed-in customer.
+  granularity: standard
+- name: customer-account-api:full
+  standard: Shopify Customer Account API
+  description: >-
+    Full read/write access to the signed-in customer's own account — orders, addresses,
+    saved payment methods, subscriptions.
+  granularity: coarse
+  note: >-
+    There is no read-only variant and no per-resource split. A customer authorizing an
+    application to see their order history necessarily also authorizes it to change their
+    addresses and payment methods. This is the notable weakness of the scope model here and
+    it is Shopify's design, not the merchant's.
+- name: customer-account-mcp-api:full
+  standard: Shopify Customer Account API (MCP)
+  description: >-
+    Full access to the authenticated customer-account MCP surface — the agent-facing
+    projection of the same account data.
+  granularity: coarse
+  note: >-
+    Declared in discovery but not reachable anonymously, so its tool list could not be
+    probed. Its existence is the evidence that a THIRD MCP server exists on this store
+    beyond the two anonymous ones profiled in mcp/ — an authenticated one, scoped to a
+    signed-in customer.
+gaps:
+- No scopes documentation page exists on makeupbymario.com; there is no developer program.
+- No incremental or downscoped variants — both product scopes are ':full'.
+- >-
+  No /.well-known/oauth-protected-resource (RFC 9728), so an MCP client cannot discover
+  which authorization server protects the customer-account MCP endpoint by the standard
+  path.
+docs: https://shopify.dev/docs/api/customer
