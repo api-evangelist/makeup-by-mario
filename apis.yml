@@ -105,6 +105,9 @@ apis:
     url: graphql/makeup-by-mario-graphql.yml
   - type: DataModel
     url: data-model/makeup-by-mario-data-model.yml
+  x-surface: platform-generated
+  x-platform: shopify
+  x-platform-surface: storefront-graphql
 - aid: makeup-by-mario:storefront-mcp
   name: MAKEUP BY MARIO Storefront MCP Server
   description: >-
@@ -129,6 +132,9 @@ apis:
     url: mcp/makeup-by-mario-mcp.yml
   - type: ToolCrosswalk
     url: mcp/makeup-by-mario-tool-crosswalk.yml
+  x-surface: platform-generated
+  x-platform: shopify
+  x-platform-surface: storefront-mcp
 - aid: makeup-by-mario:ucp-commerce
   name: MAKEUP BY MARIO UCP Agentic Commerce API
   description: >-
@@ -159,6 +165,9 @@ apis:
     url: agentic-access/makeup-by-mario-agentic-access.yml
   - type: Idempotency
     url: conventions/makeup-by-mario-conventions.yml
+  x-surface: platform-generated
+  x-platform: shopify
+  x-platform-surface: ucp
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
