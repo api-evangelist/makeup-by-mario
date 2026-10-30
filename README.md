@@ -64,8 +64,123 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-MAKEUP BY MARIO is a New York-based prestige colour-cosmetics brand founded by celebrity makeup artist Mario Dedivanovic and launched direct-to-consumer in October 2020. It runs no developer program and publishes no OpenAPI, but its Shopify-hosted storefront exposes a substantial machine-readable surface from its own domain: an anonymously introspectable Storefront GraphQL API, two live Model Context Protocol servers, a Universal Commerce Protocol merchant profile, OpenID Connect discovery for customer accounts, and a provider-authored `/agents.md` and `/llms.txt`.
+MAKEUP BY MARIO is a New York-based prestige colour-cosmetics brand founded by celebrity makeup artist Mario Dedivanovic and launched direct-to-consumer in October 2020, selling face, eye, lip, brow, blush and tool products at makeupbymario.com and through Sephora. Self-funded for its first two and a half years, it took a $40M minority growth investment from Provenance and Silas Capital in January 2023. It runs no developer program and publishes no OpenAPI, but its Shopify-hosted storefront exposes a substantial machine-readable surface from its own domain: an anonymously introspectable Storefront GraphQL API, TWO live Model Context Protocol servers whose tools/list both answer anonymously, a Universal Commerce Protocol merchant profile at /.well-known/ucp declaring cart, checkout, fulfillment, discount, order and catalog capabilities plus three payment handlers, OpenID Connect and RFC 8414 discovery for customer accounts, and a provider-authored /agents.md and /llms.txt that tell AI agents which surface to use and that no agent may finalize payment without contemporaneous human approval.
 
-- https://www.makeupbymario.com/
-- https://www.makeupbymario.com/agents.md
-- https://www.makeupbymario.com/.well-known/ucp
+**Areas:** Company · Beauty · Cosmetics · Consumer Packaged Goods · E-Commerce · Direct to Consumer · Retail · Agentic Commerce · Shopify · GraphQL · MCP · Universal Commerce Protocol
+
+## Makeup by Mario on APIs.io
+
+Everything profiled for Makeup by Mario is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/makeup-by-mario/](https://apis.io/providers/makeup-by-mario/)** — or go straight to one of the APIs or properties below.
+
+### APIs (3)
+
+- [MAKEUP BY MARIO Storefront GraphQL API](https://apis.io/apis/makeup-by-mario/storefront-graphql/) — The Shopify Storefront GraphQL API as served from MAKEUP BY MARIO's own domain. Introspection is anonymous — the full schema (416 types, 34 query fields, 41…
+- [MAKEUP BY MARIO Storefront MCP Server](https://apis.io/apis/makeup-by-mario/storefront-mcp/) — A live Model Context Protocol server on the MAKEUP BY MARIO storefront host. An anonymous JSON-RPC tools/list returned five tools with full JSON Schema…
+- [MAKEUP BY MARIO UCP Agentic Commerce API](https://apis.io/apis/makeup-by-mario/ucp-commerce/) — MAKEUP BY MARIO implements the Universal Commerce Protocol for agent-driven commerce. The merchant profile at /.well-known/ucp declares UCP 2026-04-08 and…
+
+### Published properties
+
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
+
+#### MCP servers (1)
+
+Model Context Protocol servers that expose the API to agents.
+
+- [makeup-by-mario-mcp.yml](https://apis.io/servers/makeup-by-mario/makeup-by-mario-mcp-yml/)
+
+#### Agentic access (1)
+
+Which operations an agent can call, which act, and which need a human in the loop.
+
+- [Makeup By Mario Agentic Access](https://apis.io/agentic-access/makeup-by-mario/makeup-by-mario-agentic-access/)
+
+#### Security (2)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Makeup By Mario Authentication](https://apis.io/security/makeup-by-mario/makeup-by-mario-authentication/)
+- [Makeup By Mario Domain Security](https://apis.io/security/makeup-by-mario/makeup-by-mario-domain-security/)
+
+#### OAuth scopes (1)
+
+The permissions the API asks for.
+
+- [Makeup By Mario Scopes](https://apis.io/scopes/makeup-by-mario/makeup-by-mario-scopes/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Makeup By Mario Plans Pricing](https://apis.io/plans/makeup-by-mario/makeup-by-mario-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Makeup By Mario Rate Limits](https://apis.io/rate-limits/makeup-by-mario/makeup-by-mario-rate-limits/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://www.makeupbymario.com/)
+- [Documentation](https://www.makeupbymario.com/agents.md)
+- [Support](https://www.makeupbymario.com/pages/contact-us)
+- [Blog](https://www.makeupbymario.com/blogs/education)
+- [Terms of service](https://www.makeupbymario.com/policies/terms-of-service)
+- [Privacy policy](https://www.makeupbymario.com/policies/privacy-policy)
+
+## API Evangelist rating
+
+**Kin Score 28.0** — thin · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 80.0 |
+| Contract quality | 9.3 |
+| Contract governance | 18.2 |
+| Operational transparency | 0.0 |
+| Developer ergonomics | 30.4 |
+| Access clarity | 28.9 |
+
+**Agent readiness 41.1** — agent-ready (gated down from agent-native)
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | yes |
+| Reversibility Documented | — |
+| MCP Server | platform (partial credit) |
+| Auth Clarity | served (partial credit) |
+| Idempotency | derived (partial credit) |
+| Error Semantics | documented (partial credit) |
+| OpenAPI Examples | — |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | — |
+| Agent Skills | derived (partial credit) |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | served (partial credit) |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | platform (partial credit) |
+| Pagination Ratio | na |
+| Operation Distinctiveness | na |
+
+**Regulatory alignment 39.2** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/makeup-by-mario/](https://apis.io/providers/makeup-by-mario/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Makeup by Mario: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/makeup-by-mario/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
